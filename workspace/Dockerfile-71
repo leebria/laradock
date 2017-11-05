@@ -55,9 +55,15 @@ RUN groupadd -g ${PGID} laradock && \
     apt-get update -yqq
 
 #####################################
-# SOAP:
+# CUSTOM:
 #####################################
 USER root
+
+RUN apt-get install -y net-tools
+
+#####################################
+# SOAP:
+#####################################
 
 ARG INSTALL_SOAP=false
 ENV INSTALL_SOAP ${INSTALL_SOAP}
@@ -266,7 +272,7 @@ RUN if [ ${INSTALL_NODE} = true ]; then \
         nvm install ${NODE_VERSION} && \
         nvm use ${NODE_VERSION} && \
         nvm alias ${NODE_VERSION} && \
-        npm install -g gulp bower vue-cli \
+        npm install -g webpack vue-cli \
 ;fi
 
 # Wouldn't execute when added to the RUN statement in the above block
