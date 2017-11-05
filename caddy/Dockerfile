@@ -15,6 +15,6 @@ RUN caddy --version
 
 EXPOSE 80 443 2015
 
-WORKDIR /var/www/public
+WORKDIR /var/www/ce3/public
 
 CMD ["/usr/bin/caddy", "-conf", "/etc/Caddyfile"]
