@@ -49,8 +49,10 @@ services:
         - "${WORKSPACE_SSH_PORT}:22"
       tty: true
       networks:
-        - frontend
-        - backend
+        frontend:
+          ipv4_address: "${WORKSPACE_FRONTEND_IP}"
+        backend:
+          ipv4_address: "${WORKSPACE_BACKEND_IP}"
 
 ### PHP-FPM Container #######################################
 
@@ -89,12 +91,14 @@ services:
       environment:
         - PHP_IDE_CONFIG=${PHP_IDE_CONFIG}
       networks:
-        - backend
+        backend:
+          ipv4_address: "${PHP_FPM_BACKEND_IP}"
 
 ### NGINX Server Container ##################################
 
     nginx:
       container_name: nginx
+      hostname: nginx.dev
       build:
         context: ./nginx
         args:
@@ -112,8 +116,10 @@ services:
       depends_on:
         - php-fpm
       networks:
-        - frontend
-        - backend
+        frontend:
+          ipv4_address: "${NGINX_FRONTEND_IP}"
+        backend:
+          ipv4_address: "${NGINX_BACKEND_IP}"
 
 ### MySQL Container #########################################
 
@@ -152,7 +158,8 @@ services:
         - MYSQL_PASSWORD=${MARIADB_PASSWORD}
         - MYSQL_ROOT_PASSWORD=${MARIADB_ROOT_PASSWORD}
       networks:
-        - backend
+        backend:
+          ipv4_address: "${MARIADB_BACKEND_IP}"
 
 ### RethinkDB Container #######################################
 
@@ -175,8 +182,8 @@ services:
       ports:
         - "${REDIS_PORT}:6379"
       networks:
-        - backend
-
+        backend:
+          ipv4_address: "${REDIS_BACKEND_IP}"
 ### Memcached Container #####################################
 
     memcached:
@@ -351,6 +358,7 @@ services:
 
 ### Laravel Echo Server #######################################
     laravel-echo-server:
+      container_name: echo
       build:
         context: ./laravel-echo-server
       volumes:
@@ -360,8 +368,10 @@ services:
       links:
         - redis
       networks:
-        - frontend
-        - backend
+        frontend:
+          ipv4_address: "${LARAVEL_ECHO_SERVER_FRONTEND_IP}"
+        backend:
+          ipv4_address: "${LARAVEL_ECHO_SERVER_BACKEND_IP}"
 
 ### AWS EB-CLI ####
     aws:
@@ -378,8 +388,16 @@ services:
 networks:
   frontend:
     driver: "bridge"
+    ipam:
+      config:
+        - subnet: "${FRONTEND_SUBNET}"
+          ip_range: "${FRONTEND_IP_RANGE}"
   backend:
     driver: "bridge"
+    ipam:
+      config:
+        - subnet: "${BACKEND_SUBNET}"
+          ip_range: "${BACKEND_IP_RANGE}"
 
 ### Volumes Setup #############################################
 
