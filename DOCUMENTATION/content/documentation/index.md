@@ -538,30 +538,6 @@ a) open the `docker-compose.yml` file
 <br>
 b) add a new service container by simply copy-paste this section below PHP-FPM container
 
-```yaml
-    php-worker:
-      build:
-        context: ./php-worker
-        dockerfile: "Dockerfile-${PHP_VERSION}" #Dockerfile-71 or #Dockerfile-70 available
-        args:
-          - INSTALL_PGSQL=${PHP_WORKER_INSTALL_PGSQL} #Optionally install PGSQL PHP drivers
-      volumes_from:
-        - applications
-      depends_on:
-        - workspace
-      extra_hosts:
-        - "dockerhost:${DOCKER_HOST_IP}"
-      networks:
-        - backend
-```
-2 - Start everything up
-
-```bash
-docker-compose up -d php-worker
-```
-
-
-
 
 
 <br>
@@ -726,40 +702,6 @@ docker-compose up -d mariadb phpmyadmin
 
 2 - Open your browser and visit the localhost on port **8080**:  `http://localhost:8080`
 
-
-
-
-
-
-<br>
-<a name="Use-Adminer"></a>
-## Use Adminer
-
-1 - Run the Adminer Container (`adminer`) with the `docker-compose up` command. Example:
-
-```bash
-docker-compose up -d adminer
-```
-
-2 - Open your browser and visit the localhost on port **8080**:  `http://localhost:8080`
-
-**Note:** We've locked Adminer to version 4.3.0 as at the time of writing [it contained a major bug](https://sourceforge.net/p/adminer/bugs-and-features/548/) preventing PostgreSQL users from logging in. If that bug is fixed (or if you're not using PostgreSQL) feel free to set Adminer to the latest version within [the Dockerfile](https://github.com/laradock/laradock/blob/master/adminer/Dockerfile#L1): `FROM adminer:latest`
-
-
-
-
-
-<br>
-<a name="Use-pgAdmin"></a>
-## Use PgAdmin
-
-1 - Run the pgAdmin Container (`pgadmin`) with the `docker-compose up` command. Example:
-
-```bash
-docker-compose up -d postgres pgadmin
-```
-
-2 - Open your browser and visit the localhost on port **5050**:  `http://localhost:5050`
 
 
 

@@ -50,27 +50,6 @@ RUN if [ ${INSTALL_SOAP} = true ]; then \
     docker-php-ext-install soap \
 ;fi
 
-#####################################
-# pgsql
-#####################################
-
-ARG INSTALL_PGSQL=false
-RUN if [ ${INSTALL_PGSQL} = true ]; then \
-    # Install the pgsql extension
-    apt-get update -yqq && \
-    docker-php-ext-install pgsql \
-;fi
-
-#####################################
-# pgsql client
-#####################################
-
-ARG INSTALL_PG_CLIENT=false
-RUN if [ ${INSTALL_PG_CLIENT} = true ]; then \
-    # Install the pgsql clint
-    apt-get update -yqq && \
-    apt-get install -y postgresql-client \
-;fi
 
 #####################################
 # xDebug:
@@ -88,19 +67,6 @@ RUN if [ ${INSTALL_XDEBUG} = true ]; then \
 
 # Copy xdebug configration for remote debugging
 COPY ./xdebug.ini /usr/local/etc/php/conf.d/xdebug.ini
-
-#####################################
-# Blackfire:
-#####################################
-
-ARG INSTALL_BLACKFIRE=false
-RUN if [ ${INSTALL_XDEBUG} = false -a ${INSTALL_BLACKFIRE} = true ]; then \
-    version=$(php -r "echo PHP_MAJOR_VERSION.PHP_MINOR_VERSION;") \
-    && curl -A "Docker" -o /tmp/blackfire-probe.tar.gz -D - -L -s https://blackfire.io/api/v1/releases/probe/php/linux/amd64/$version \
-    && tar zxpf /tmp/blackfire-probe.tar.gz -C /tmp \
-    && mv /tmp/blackfire-*.so $(php -r "echo ini_get('extension_dir');")/blackfire.so \
-    && printf "extension=blackfire.so\nblackfire.agent_socket=tcp://blackfire:8707\n" > $PHP_INI_DIR/conf.d/blackfire.ini \
-;fi
 
 #####################################
 # PHP REDIS EXTENSION FOR PHP 5
@@ -175,29 +141,6 @@ ARG INSTALL_EXIF=false
 RUN if [ ${INSTALL_EXIF} = true ]; then \
     # Enable Exif PHP extentions requirements
     docker-php-ext-install exif \
-;fi
-
-#####################################
-# PHP Aerospike:
-#####################################
-
-ARG INSTALL_AEROSPIKE=false
-ENV INSTALL_AEROSPIKE ${INSTALL_AEROSPIKE}
-# Copy aerospike configration for remote debugging
-COPY ./aerospike.ini /usr/local/etc/php/conf.d/aerospike.ini
-RUN if [ ${INSTALL_AEROSPIKE} = true ]; then \
-    # Install the php aerospike extension
-    curl -L -o /tmp/aerospike-client-php.tar.gz "https://github.com/aerospike/aerospike-client-php/archive/3.4.14.tar.gz" \
-    && mkdir -p aerospike-client-php \
-    && tar -C aerospike-client-php -zxvf /tmp/aerospike-client-php.tar.gz --strip 1 \
-    && ( \
-        cd aerospike-client-php/src/aerospike \
-        && phpize \
-        && ./build.sh \
-        && make install \
-    ) \
-    && rm /tmp/aerospike-client-php.tar.gz \
-    && docker-php-ext-enable aerospike \
 ;fi
 
 #####################################
