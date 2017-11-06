@@ -4,3 +4,5 @@
 .env
 /.project
 .docker-sync
+/laravel-echo-server/laravel-echo-server.json
+/laravel-echo-server/laravel-echo-server.json.backup

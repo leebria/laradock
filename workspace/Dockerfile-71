@@ -75,19 +75,6 @@ RUN if [ ${INSTALL_SOAP} = true ]; then \
 ;fi
 
 #####################################
-# LDAP:
-#####################################
-
-ARG INSTALL_LDAP=false
-ENV INSTALL_LDAP ${INSTALL_LDAP}
-
-RUN if [ ${INSTALL_LDAP} = true ]; then \
-    apt-get update -yqq && \
-    apt-get install -y libldap2-dev && \
-    apt-get install -y php7.1-ldap \
-;fi
-
-#####################################
 # Set Timezone
 #####################################
 
@@ -185,19 +172,6 @@ RUN if [ ${INSTALL_WORKSPACE_SSH} = true ]; then \
 ;fi
 
 #####################################
-# MongoDB:
-#####################################
-
-# Check if Mongo needs to be installed
-ARG INSTALL_MONGO=false
-ENV INSTALL_MONGO ${INSTALL_MONGO}
-RUN if [ ${INSTALL_MONGO} = true ]; then \
-    pecl -q install mongodb && \
-    echo "extension=mongodb.so" >> /etc/php/7.1/mods-available/mongodb.ini && \
-    ln -s /etc/php/7.1/mods-available/mongodb.ini /etc/php/7.1/cli/conf.d/30-mongodb.ini \
-;fi
-
-#####################################
 # PHP REDIS EXTENSION FOR PHP 7.1
 #####################################
 
@@ -281,21 +255,6 @@ RUN if [ ${INSTALL_YARN} = true ]; then \
     echo 'export PATH="$YARN_DIR/bin:$PATH"' >> ~/.bashrc \
 ;fi
 
-#####################################
-# PHP V8JS:
-#####################################
-USER root
-
-ARG INSTALL_V8JS=false
-ENV INSTALL_V8JS ${INSTALL_V8JS}
-
-RUN if [ ${INSTALL_V8JS} = true ]; then \
-    add-apt-repository -y ppa:pinepain/libv8-5.4 \
-    && apt-get update -yqq \
-    && apt-get install -y php-xml php-dev php-pear libv8-5.4 \
-    && pecl install v8js \
-    && echo "extension=v8js.so" >> /etc/php/7.1/cli/php.ini \
-;fi
 
 #####################################
 # Non-root user : PHPUnit path
@@ -318,22 +277,6 @@ ENV INSTALL_LARAVEL_ENVOY ${INSTALL_LARAVEL_ENVOY}
 RUN if [ ${INSTALL_LARAVEL_ENVOY} = true ]; then \
     composer global require "laravel/envoy=~1.0" \
 ;fi
-
-#####################################
-# Laravel Installer:
-#####################################
-USER root
-
-ARG INSTALL_LARAVEL_INSTALLER=false
-ENV INSTALL_LARAVEL_INSTALLER ${INSTALL_LARAVEL_INSTALLER}
-
-RUN if [ ${INSTALL_LARAVEL_INSTALLER} = true ]; then \
-	echo "" >> ~/.bashrc && \
-	echo 'export PATH="~/.composer/vendor/bin:$PATH"' >> ~/.bashrc \
-	&& composer global require "laravel/installer" \
-;fi
-
-USER laradock
 
 #####################################
 # Deployer:
@@ -372,20 +315,6 @@ RUN if [ ${INSTALL_LINUXBREW} = true ]; then \
     echo 'export LD_LIBRARY_PATH="$LINUXBREWHOME/lib64:$LINUXBREWHOME/lib:$LD_LIBRARY_PATH"' >> ~/.bashrc \
 ;fi
 
-#####################################
-# Image optimizers:
-#####################################
-USER root
-ARG INSTALL_IMAGE_OPTIMIZERS=false
-ENV INSTALL_IMAGE_OPTIMIZERS ${INSTALL_IMAGE_OPTIMIZERS}
-RUN if [ ${INSTALL_IMAGE_OPTIMIZERS} = true ]; then \
-    apt-get install -y --force-yes jpegoptim optipng pngquant gifsicle && \
-    if [ ${INSTALL_NODE} = true ]; then \
-        . ~/.bashrc && npm install -g svgo \
-    ;fi\
-;fi
-
-USER laradock
 
 #####################################
 # Symfony:
@@ -414,41 +343,6 @@ RUN if [ ${INSTALL_PYTHON} = true ]; then \
   && pip install --upgrade virtualenv \
 ;fi
 
-#####################################
-# ImageMagick:
-#####################################
-USER root
-ARG INSTALL_IMAGEMAGICK=false
-ENV INSTALL_IMAGEMAGICK ${INSTALL_IMAGEMAGICK}
-RUN if [ ${INSTALL_IMAGEMAGICK} = true ]; then \
-    apt-get install -y --force-yes imagemagick php-imagick \
-;fi
-
-#####################################
-# Dusk Dependencies:
-#####################################
-USER root
-ARG CHROME_DRIVER_VERSION=stable
-ENV CHROME_DRIVER_VERSION ${CHROME_DRIVER_VERSION}
-ARG INSTALL_DUSK_DEPS=false
-ENV INSTALL_DUSK_DEPS ${INSTALL_DUSK_DEPS}
-RUN if [ ${INSTALL_DUSK_DEPS} = true ]; then \
-  add-apt-repository ppa:ondrej/php \
-  && apt-get update \
-  && apt-get -y install zip wget unzip xdg-utils \
-    libxpm4 libxrender1 libgtk2.0-0 libnss3 libgconf-2-4 xvfb \
-    gtk2-engines-pixbuf xfonts-cyrillic xfonts-100dpi xfonts-75dpi \
-    xfonts-base xfonts-scalable x11-apps \
-  && wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb \
-  && dpkg -i --force-depends google-chrome-stable_current_amd64.deb \
-  && apt-get -y -f install \
-  && dpkg -i --force-depends google-chrome-stable_current_amd64.deb \
-  && rm google-chrome-stable_current_amd64.deb \
-  && wget https://chromedriver.storage.googleapis.com/${CHROME_DRIVER_VERSION}/chromedriver_linux64.zip \
-  && unzip chromedriver_linux64.zip \
-  && mv chromedriver /usr/local/bin/ \
-  && rm chromedriver_linux64.zip \
-;fi
 
 #
 #--------------------------------------------------------------------------

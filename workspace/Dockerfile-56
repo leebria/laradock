@@ -163,21 +163,6 @@ RUN if [ ${INSTALL_WORKSPACE_SSH} = true ]; then \
 ;fi
 
 #####################################
-# MongoDB:
-#####################################
-
-# Check if Mongo needs to be installed
-ARG INSTALL_MONGO=false
-ENV INSTALL_MONGO ${INSTALL_MONGO}
-RUN if [ ${INSTALL_MONGO} = true ]; then \
-    # Install the mongodb extension
-    pecl channel-update pecl.php.net && \
-    pecl install mongodb && \
-    echo "extension=mongodb.so" >> /etc/php/5.6/mods-available/mongodb.ini && \
-    ln -s /etc/php/5.6/mods-available/mongodb.ini /etc/php/5.6/cli/conf.d/30-mongodb.ini \
-;fi
-
-#####################################
 # PHP REDIS EXTENSION FOR PHP 5.6
 #####################################
 
@@ -190,21 +175,6 @@ RUN if [ ${INSTALL_PHPREDIS} = true ]; then \
     phpenmod redis \
 ;fi
 
-#####################################
-# Drush:
-#####################################
-USER root
-ENV DRUSH_VERSION 8.1.2
-ARG INSTALL_DRUSH=false
-ENV INSTALL_DRUSH ${INSTALL_DRUSH}
-RUN if [ ${INSTALL_DRUSH} = true ]; then \
-    apt-get update -yqq && \
-    apt-get -y install mysql-client && \
-    # Install Drush 8 with the phar file.
-    curl -fsSL -o /usr/local/bin/drush https://github.com/drush-ops/drush/releases/download/$DRUSH_VERSION/drush.phar | bash && \
-    chmod +x /usr/local/bin/drush && \
-    drush core-status \
-;fi
 
 #####################################
 # Node / NVM:
@@ -300,22 +270,6 @@ RUN if [ ${INSTALL_LARAVEL_ENVOY} = true ]; then \
     composer global require "laravel/envoy=~1.0" \
 ;fi
 
-#####################################
-# Laravel Installer:
-#####################################
-USER root
-
-ARG INSTALL_LARAVEL_INSTALLER=true
-ENV INSTALL_LARAVEL_INSTALLER ${INSTALL_LARAVEL_INSTALLER}
-
-RUN if [ ${INSTALL_LARAVEL_INSTALLER} = true ]; then \
-    # Install the Laravel Installer
-    echo "" >> ~/.bashrc && \
-    echo 'export PATH="~/.composer/vendor/bin:$PATH"' >> ~/.bashrc \
-    && composer global require "laravel/installer" \
-;fi
-
-USER laradock
 
 #####################################
 # Deployer:
@@ -362,45 +316,6 @@ RUN if [ ${INSTALL_LINUXBREW} = true ]; then \
     echo 'export LD_LIBRARY_PATH="$LINUXBREWHOME/lib64:$LINUXBREWHOME/lib:$LD_LIBRARY_PATH"' >> ~/.bashrc \
 ;fi
 
-#####################################
-# SQL SERVER:
-#####################################
-ARG INSTALL_MSSQL=false
-ENV INSTALL_MSSQL ${INSTALL_MSSQL}
-
-RUN if [ ${INSTALL_MSSQL} = true ]; then \
-    apt-get -y install php5.6-sybase freetds-bin freetds-common libsybdb5 \
-    && echo "extension=pdo_dblib.so" > /etc/php/5.6/cli/conf.d/20-pdo_dblib.ini \
-;fi
-
-#####################################
-# Minio:
-#####################################
-USER root
-ARG INSTALL_MC=false
-ENV INSTALL_MC ${INSTALL_MC}
-
-COPY mc/config.json /root/.mc/config.json
-
-RUN if [ ${INSTALL_MC} = true ]; then\
-    curl -fsSL -o /usr/local/bin/mc https://dl.minio.io/client/mc/release/linux-amd64/mc && \
-    chmod +x /usr/local/bin/mc \
-;fi
-
-#####################################
-# Image optimizers:
-#####################################
-USER root
-ARG INSTALL_IMAGE_OPTIMIZERS=false
-ENV INSTALL_IMAGE_OPTIMIZERS ${INSTALL_IMAGE_OPTIMIZERS}
-RUN if [ ${INSTALL_IMAGE_OPTIMIZERS} = true ]; then \
-    apt-get install -y --force-yes jpegoptim optipng pngquant gifsicle && \
-    if [ ${INSTALL_NODE} = true ]; then \
-        . ~/.bashrc && npm install -g svgo \
-    ;fi\
-;fi
-
-USER laradock
 
 #####################################
 # Symfony:
@@ -437,59 +352,6 @@ RUN if [ ${INSTALL_PYTHON} = true ]; then \
   && pip install --upgrade virtualenv \
 ;fi
 
-#####################################
-# ImageMagick:
-#####################################
-USER root
-ARG INSTALL_IMAGEMAGICK=false
-ENV INSTALL_IMAGEMAGICK ${INSTALL_IMAGEMAGICK}
-RUN if [ ${INSTALL_IMAGEMAGICK} = true ]; then \
-    apt-get install -y --force-yes imagemagick php-imagick \
-;fi
-
-#####################################
-# Terraform:
-#####################################
-USER root
-ARG INSTALL_TERRAFORM=false
-ENV INSTALL_TERRAFORM ${INSTALL_TERRAFORM}
-RUN if [ ${INSTALL_TERRAFORM} = true ]; then \
-    apt-get update -yqq \
-    && apt-get -y install sudo wget unzip \
-    && wget https://releases.hashicorp.com/terraform/0.10.6/terraform_0.10.6_linux_amd64.zip \
-    && unzip terraform_0.10.6_linux_amd64.zip \
-    && mv terraform /usr/local/bin \
-    && rm terraform_0.10.6_linux_amd64.zip \
-;fi
-
-#####################################
-# Dusk Dependencies:
-#####################################
-USER root
-ARG INSTALL_DUSK_DEPS=false
-ENV INSTALL_DUSK_DEPS ${INSTALL_DUSK_DEPS}
-RUN if [ ${INSTALL_DUSK_DEPS} = true ]; then \
-  # Install required packages
-  add-apt-repository ppa:ondrej/php \
-  && apt-get update \
-  && apt-get -y install zip wget unzip xdg-utils \
-    libxpm4 libxrender1 libgtk2.0-0 libnss3 libgconf-2-4 xvfb \
-    gtk2-engines-pixbuf xfonts-cyrillic xfonts-100dpi xfonts-75dpi \
-    xfonts-base xfonts-scalable x11-apps \
-
-  # Install Google Chrome
-  && wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb \
-  && dpkg -i --force-depends google-chrome-stable_current_amd64.deb \
-  && apt-get -y -f install \
-  && dpkg -i --force-depends google-chrome-stable_current_amd64.deb \
-  && rm google-chrome-stable_current_amd64.deb \
-
-  # Install Chrome Driver
-  && wget https://chromedriver.storage.googleapis.com/2.31/chromedriver_linux64.zip \
-  && unzip chromedriver_linux64.zip \
-  && mv chromedriver /usr/local/bin/ \
-  && rm chromedriver_linux64.zip \
-;fi
 
 #
 #--------------------------------------------------------------------------
